@@ -5,8 +5,331 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <!-- https://github.com/zachstronaut/jquery-css-transform -->
+    <script src="scripts/jquery-css-transform.js"></script>
 </head>
 <body>
-    Hello World!
+    <div id="drag">
+        <div id="spin">
+            <script>
+                
+                //Genearl Notes:
+                // Font reference: https://codepen.io/primaapriansyah/pen/DjEFq
+                // Format of makecode: https://makecode.com/_A2R7zrPsuHFy 
+                // $.ajax({
+                //     dataType: 'text',
+                //     success: function(string) {
+                //         data = $.parseJSON(string);
+                //         // do something
+                //     },
+                //     url: '/data/ninjas.json'
+                // });
+                // $.getJSON('/data/ninjas.json', {} function(data) {
+                //     // do something with the data here
+                //     console.log(data);
+                // });
+
+                // https://stackoverflow.com/questions/19491336/how-to-get-url-parameter-using-jquery-or-plain-javascript
+                var getUrlParameter = function getUrlParameter(sParam) {
+                    var sPageURL = window.location.search.substring(1),
+                        sURLVariables = sPageURL.split('&'),
+                        sParameterName,
+                        i;
+
+                    for (i = 0; i < sURLVariables.length; i++) {
+                        sParameterName = sURLVariables[i].split('=');
+
+                        if (sParameterName[0] === sParam) {
+                            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+                        }
+                    }
+                    return false;
+                };
+                var ninja = getUrlParameter('ninja'); if (!ninja) ninja = '567';
+                console.log(ninja);
+
+                $.ajax({ 
+                    type: 'GET', 
+                    url: '/data/ninjas.json', 
+                    data: { get_param: '123' }, 
+                    dataType: 'json',
+                    success: function (data) { 
+                        var content = '';
+                        $.each(data[ninja], function(index, value) {
+                            if (index == 0) {
+                                content += '<p style="margin-left:' + -
+                                
+                                data[ninja].length * 10 + 'px">Welcome ' + value['Ninja'] + '!</p>'
+                            }
+                            if (value['Platform'] == 'Scratch') {
+                                content += '<a href="https://scratch.mit.edu/projects/' + value['Game ID'] + '/fullscreen/"><img src="' + value['Game Image'] + '" alt=""></a>';
+                            } 
+                            if (value['Platform'] == 'MakeCode') {
+                                content += '<a href="https://makecode.com/' + value['Game ID'] + '"><img src="' + value['Game Image'] + '" alt=""></a>';
+                            } 
+                        })
+                        // https://api.jquery.com/append/
+                        $("#spin").append(content);
+                        // console.log(data[ninja]);
+                    }
+                });
+                
+            </script>
+            <!-- <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/1.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/2.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/3.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/4.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/5.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/6.jpg" alt=""></a>
+            <a href="https://scratch.mit.edu/projects/608750567/fullscreen/"><img src="images/7.jpg" alt=""></a> -->
+        </div>
+        <div id="ground"></div>
+    </div>
+    <script>
+        setTimeout(function() {
+            var radius = 420;
+            var autoRotate = true;
+            var rotateSpeed = -60;
+            var items = $("#drag a").length;
+            var imgWidth = 2*Math.PI*radius / (items + 1); //500 / (items*5/7);
+            var imgHeight = imgWidth * 0.6;//320 / (items*5/7);
+            
+            setTimeout(init, 2000);
+
+            var odrag = document.getElementById('drag');
+            var ospin = document.getElementById('spin');
+            var aImg = ospin.getElementsByTagName('a');;
+            var aEle = [...aImg];
+
+            ospin.style.width = imgWidth + "px";
+            ospin.style.height = imgHeight + "px";
+
+            var ground = document.getElementById('ground');
+            ground.style.width = radius * 3 + "px";
+            ground.style.height = radius * 3 + "px";
+
+            function init(delayTime){
+                for (var i = 0; i < aEle.length; i++) {
+                    aEle[i].style.transform = "rotateY(" + (i* (360 / aEle.length)) + "deg) translateZ(" + radius + "px)";
+                    aEle[i].style.transition = "transform 1s"; 
+                    aEle[i].style.transitionDelay = delayTime || (aEle.length - i ) / 4 + "s";
+                }
+            }
+
+            function applyTransform(obj) {
+                if(tY > 180) tY = 180;
+                if(tY < 0) tY = 0;
+
+                obj.style.transform = "rotateX(" + (-tY) + "deg) rotateY(" + (tX) + "deg)";
+            }
+
+            function playSpin(yes) {
+                ospin.style.animationPlayState = (yes ? 'running' : 'paused');
+            }
+
+            var sX, sY, nX, nY, desX = 0, desY = 0, tX= 0, tY = 5;
+
+            if (autoRotate) {
+                var animationName = (rotateSpeed > 0 ? 'spin' : 'spinRevert');
+                ospin.style.animation = `$ {animationName} ${Math.abs(rotateSpeed)} s infinite linear`;
+            }
+
+            document.onpointerdown = function (e) {
+                clearInterval(odrag.timer);
+                e = e || window.event;
+                var sX = e.clientX, sY = e.clientY;
+                
+
+                this.onpointermove = function (e) {
+                    e = e || window.event;
+                    var nX = e.clientX, nY = e.clientY;
+
+                        desX = nX - sX;
+                        desY = nY - sY;
+                        tX += desX * 0.1;
+                        tY += desY * 0.1;
+                        
+                        applyTransform(odrag);
+
+                        sX = nX;
+                        sY = nY;
+                };
+
+                this.onpointerup = function (e) {
+                    odrag.timer = setInterval (function () {
+                        desX *= 0.95;
+                        desY *= 0.95;
+                        tX += desX * 0.1;
+                        tY += desY * 0.1;
+
+                        applyTransform(odrag);
+
+                        playSpin(false);
+
+                        if(Math.abs(desX) < 0.5 && Math.abs(desY) < 0.5) {
+                            clearInterval(odrag.timer);
+                            playSpin(true);
+                        }
+                    }, 17);
+                    
+                    this.onpointermove = this.onpointerup = null;
+                };
+                return false;
+            };
+
+            // Test function for getting Rotation
+            // https://stackoverflow.com/questions/8270612/get-element-moz-transformrotate-value-in-jquery
+            // function getRotationDegrees(obj) {
+            //     var matrix = obj.css("-webkit-transform") ||
+            //     obj.css("-moz-transform")    ||
+            //     obj.css("-ms-transform")     ||
+            //     obj.css("-o-transform")      ||
+            //     obj.css("transform");
+            //     if(matrix !== 'none') {
+            //         var values = matrix.split('(')[1].split(')')[0].split(',');
+            //         var a = values[0];
+            //         var b = values[1];
+            //         var angle = Math.round(Math.atan2(b, a) * (180/Math.PI));
+            //     } else { var angle = 0; }
+            //     return (angle < 0) ? angle + 360 : angle;
+            // }   
+
+            // Test function for converting transfom matrix 3D
+            // https://stackoverflow.com/questions/34450835/get-3d-css-rotation-value-from-matrix3d-with-javascript
+            // function getRotation($element) {
+
+            //     var matrix = $element.css('transform'),
+            //         rotateX = 0,
+            //         rotateY = 0,
+            //         rotateZ = 0;
+
+            //     if (matrix !== 'none') {
+
+            //         // do some magic
+            //         var values = matrix.split('(')[1].split(')')[0].split(','),
+            //             pi = Math.PI,
+            //             sinB = parseFloat(values[8]),
+            //             b = Math.round(Math.asin(sinB) * 180 / pi),
+            //             cosB = Math.cos(b * pi / 180),
+            //             matrixVal10 = parseFloat(values[9]),
+            //             a = Math.round(Math.asin(-matrixVal10 / cosB) * 180 / pi),
+            //             matrixVal1 = parseFloat(values[0]),
+            //             // c = Math.round(Math.acos(matrixVal1 / cosB) * 180 / pi);
+            //             // c = Math.round(Math.atan2(values[1], values[0]) * 180 / pi); //if (c < 0) { c = 360 + c; }
+            //             c = Math.round(Math.atan2(values[1], values[0]) * 180 / pi); //if (c < 0) { c = 360 + c; }
+
+            //         rotateX = a;
+            //         rotateY = b;
+            //         rotateZ = c;
+
+            //     }
+
+            //     return {
+            //         rotateX: rotateX,
+            //         rotateY: rotateY,
+            //         rotateZ: rotateZ
+            //     };
+
+            // }
+
+            // https://stackoverflow.com/questions/7044563/jquery-trigger-click-on-keypress
+            // https://www.codegrepper.com/code-examples/javascript/jquery+event+which+enter+key
+            // https://stackoverflow.com/questions/4338161/how-to-simulate-anchor-link-click
+            // On keydown - click link of active img
+            $(document).on('keydown', function(e) {
+                if(e.keyCode === 13) {
+                    $("#focusImg")[0].click();
+                }
+            })
+
+            // Function to use keyboard arrows to move the carousel.
+            // Most centered div will be highlighted.
+            document.addEventListener('keydown', function(event) {
+                // find largest width inside drag div
+                // var largestImg = "";
+                // var maxWidth = 0;
+                // if (largestImg != "") {
+                //     maxWidth = $('img[src="'+largestImg+'"]').width();
+                // }
+                // var dragRotation = getRotation($('#drag')).rotateZ; if(dragRotation < 0) dragRotation += 360;
+                // var segmentHalf = segmentSize / 2;
+
+                // https://stackoverflow.com/questions/53445105/get-element-closest-to-the-middle-of-the-screen
+                const centeredElement = document.elementFromPoint(
+                    document.body.offsetWidth / 2, document.body.offsetHeight / 2
+                );
+                
+
+                $('#drag').find('a').each(function(index) {
+                    if ($(this).find("img").attr('src') === centeredElement.getAttribute('src')) {
+                        $(this).attr('id', 'focusImg');
+                    } else {
+                        $(this).attr('id', ' ');
+                    }
+
+                    // let segment = (index * segmentSize);
+                    // let headSegment = segment - segmentHalf; if (headSegment < 0) headSegment = headSegment + 360;
+                    // let tailSegment = segment + segmentHalf; if (tailSegment > 360) tailSegment = tailSegment - 360;
+                    // if (dragRotation >= headSegment && dragRotation <= tailSegment || ((segment - segmentHalf < 0) && dragRotation <= headSegment && dragRotation <= tailSegment)){
+                    //     $(this).attr('id', 'focusImg');
+                    // } else {
+                    //     $(this).attr('id', ' ');
+                    // }
+                    
+                    // console.log(dragRotation);
+                    // var thisWidth = $(this).width();
+                    // if (thisWidth > maxWidth) {
+                    //     maxWidth = thisWidth;
+                    //     largestImg = this.getAttribute('src');
+                    //     // console.log(largestImg);
+                        
+                    // }
+                    // console.log(this.getAttribute('src') + ":" + thisWidth);
+                    
+                    // Rotation approach
+                    // const stringResult = this.style.transform.replace( /\D+/g, '');
+                    // const numberResult = parseInt(stringResult,10);
+                    // const angle = ($(this).css('transform').split(','));
+                    // console.log($(this).find("img").attr('src') + ":" + angle);
+
+
+                })
+                // console.log(parseInt($('#drag').css('transform').replace(/[^\d.]/g, ''),10));
+                // console.log(getRotation($('#drag')).rotateY);
+
+                var key = event.key;
+                var viewAdjust = items*(items-1)
+                switch (key) {
+                    case "ArrowLeft":
+                        tX += 1;
+                        tY -= 1 / viewAdjust;
+                        applyTransform(odrag);
+                        break;
+                    case "ArrowRight":
+                        tX -= 1;
+                        tY += 1 / viewAdjust;
+                        applyTransform(odrag);
+                        break;
+                    case "ArrowUp":
+                        tY += 1;
+                        applyTransform(odrag);
+                        break;
+                    case "ArrowDown":
+                        tY -= 1;
+                        applyTransform(odrag);
+                        break;
+                    case "Tab":
+                        window.location.href = '/scan.html';
+                        break;
+                    
+                }
+            });
+        }, 1000)
+        
+    </script>
+
+    
 </body>
 </html>

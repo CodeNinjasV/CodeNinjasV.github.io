@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <!-- https://github.com/zachstronaut/jquery-css-transform -->
+    <script src="scripts/jquery-css-transform.js"></script>
+</head>
+<body>
+    <div id="drag">
+        <p>Scan Your Wristband</p>
+        <div id="ground"></div>
+    </div>
+    <div id="scanner"><img src="images/pulsing-badge.svg" width="600" height="600" alt=""/></div>
+    <script>
+        var ninja = 'abc';
+        //https://stackoverflow.com/questions/20552539/jquery-fade-to-a-different-page
+        document.addEventListener('keydown', function(event) {
+            var key = event.key;
+            if (key == "Tab") {
+                window.location.href = '/index.html?ninja=' + ninja;
+                
+            }
+        });
+
+    </script>
+    
+</body>
+</html>
